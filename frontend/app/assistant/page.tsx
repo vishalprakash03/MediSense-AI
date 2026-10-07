@@ -6,6 +6,7 @@ import ChatBubble from "@/components/ChatBubble";
 import RiskCard from "@/components/RiskCard";
 import Disclaimer from "@/components/Disclaimer";
 import WellbeingPlan from "@/components/WellbeingPlan";
+import PageVisual from "@/components/PageVisual";
 import { getToken, sendChatMessage, predictRisk } from "@/services/api";
 
 type Msg = { role: "user" | "assistant"; text: string };
@@ -26,7 +27,7 @@ export default function AssistantPage() {
   const [recommendations, setRecommendations] = useState<any>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const answerCount = messages.filter((message) => message.role === "user").length;
-  const currentStage = answerCount < 6 ? 1 : answerCount < 13 ? 2 : 3;
+  const currentStage = answerCount < 9 ? 1 : answerCount < 22 ? 2 : 3;
 
   useEffect(() => {
     if (!getToken()) {
@@ -88,13 +89,16 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="flex">
+    <div className="app-shell flex">
       <Sidebar />
-      <main className="flex max-w-4xl flex-1 flex-col p-5 pt-20 md:p-8">
-        <section className="mb-5 rounded-3xl bg-gradient-to-r from-slate-900 via-brand-700 to-brand-500 px-6 py-7 text-white shadow-lg shadow-brand-900/10">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-100">Private guided assessment</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Let&apos;s understand your health picture.</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-50">Answer one question at a time. You can skip clinical readings you do not know, and we will be clear about what needs more information.</p>
+      <main className="app-main visual-page visual-page-assistant flex max-w-4xl flex-1 flex-col p-5 pt-20 md:p-8">
+        <section className="project-page-hero mb-5 overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-brand-700 to-brand-500 px-6 py-7 text-white shadow-lg shadow-brand-900/10">
+          <div className="relative z-10 max-w-2xl md:pr-44">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-100">Private guided assessment</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Let&apos;s understand your health picture.</h1>
+            <p className="mt-2 text-sm leading-6 text-brand-50">Answer one question at a time. You can skip clinical readings you do not know, and we will be clear about what needs more information.</p>
+          </div>
+          <PageVisual visual="assistant" className="project-hero-visual" />
         </section>
 
         <div className="mb-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">

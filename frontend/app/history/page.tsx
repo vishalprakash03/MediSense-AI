@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import RiskCard from "@/components/RiskCard";
+import PageVisual from "@/components/PageVisual";
 import { getToken, getHistory } from "@/services/api";
 
 export default function HistoryPage() {
@@ -24,11 +25,17 @@ export default function HistoryPage() {
   }, [router]);
 
   return (
-    <div className="flex">
+    <div className="app-shell flex">
       <Sidebar />
-      <main className="flex-1 p-5 pt-20 md:p-8">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-1">Prediction History</h1>
-        <p className="text-gray-500 text-sm mb-6">Review and compare your past health assessments.</p>
+      <main className="app-main visual-page visual-page-history flex-1 space-y-6 p-5 pt-20 md:p-8">
+        <section className="project-page-hero overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-800 via-blue-700 to-cyan-600 px-6 py-7 text-white shadow-lg shadow-blue-950/10">
+          <div className="relative z-10 max-w-2xl md:pr-44">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-100">Your assessment timeline</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Prediction history</h1>
+            <p className="mt-2 text-sm leading-6 text-indigo-50">Review previous health assessments and use the trend as a helpful discussion point with your healthcare professional.</p>
+          </div>
+          <PageVisual visual="history" className="project-hero-visual" />
+        </section>
 
         {loading ? (
           <p className="text-sm text-gray-400">Loading…</p>

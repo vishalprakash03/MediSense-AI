@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 340" fill="none">
+  <defs>
+    <linearGradient id="profilebg" x1="35" y1="40" x2="480" y2="305" gradientUnits="userSpaceOnUse"><stop stop-color="#BAF0E0"/><stop offset=".52" stop-color="#B8E7F5"/><stop offset="1" stop-color="#D1CBF6"/></linearGradient>
+    <linearGradient id="avatar" x1="205" y1="72" x2="305" y2="196" gradientUnits="userSpaceOnUse"><stop stop-color="#0A887A"/><stop offset="1" stop-color="#347AA9"/></linearGradient>
+    <filter id="prof" x="56" y="22" width="408" height="300" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="15" stdDeviation="15" flood-color="#15536E" flood-opacity=".18"/></filter>
+  </defs>
+  <circle cx="260" cy="170" r="160" fill="url(#profilebg)" fill-opacity=".8"/>
+  <g opacity=".7" stroke="#fff" stroke-width="2"><path d="M47 71h34M64 54v34M444 83h31M459.5 67v32M440 278h38M459 259v38"/></g>
+  <g filter="url(#prof)"><rect x="86" y="37" width="348" height="264" rx="31" fill="#FAFFFF"/></g>
+  <circle cx="260" cy="123" r="55" fill="url(#avatar)"/>
+  <circle cx="260" cy="108" r="18" fill="#DBFBF1"/><path d="M225 158c4-22 20-33 35-33s31 11 35 33" fill="#DBFBF1"/>
+  <rect x="175" y="194" width="170" height="10" rx="5" fill="#396B70"/><rect x="204" y="213" width="112" height="7" rx="3.5" fill="#9CBCC1"/>
+  <g><rect x="116" y="242" width="87" height="32" rx="14" fill="#E4F9F0"/><path d="M137 258c0-6 8-9 12-3 4-6 12-3 12 3 0 7-12 12-12 12s-12-5-12-12Z" fill="#0A887A"/><rect x="172" y="253" width="15" height="7" rx="3.5" fill="#75BDAA"/></g>
+  <g><rect x="216" y="242" width="87" height="32" rx="14" fill="#E8F3FF"/><path d="M237 259c0-10 14-16 14-16s14 6 14 16c0 8-5 14-14 14s-14-6-14-14Z" stroke="#357AA6" stroke-width="3"/><path d="m244 258 5 5 10-12" stroke="#357AA6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g><rect x="316" y="242" width="87" height="32" rx="14" fill="#F0EDFF"/><path d="M338 263c5-14 20-16 28-13-1 13-12 24-25 23" fill="#8A6BC4"/><path d="M341 273c3-8 10-14 20-19" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>
+</svg>

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
+import PageVisual from "@/components/PageVisual";
 import { deleteAccount, getToken, getProfile, logout, updateProfile } from "@/services/api";
 
 export default function ProfilePage() {
@@ -62,11 +63,17 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex">
+    <div className="app-shell flex">
       <Sidebar />
-      <main className="max-w-2xl flex-1 p-5 pt-20 md:p-8">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-1">Profile</h1>
-        <p className="text-gray-500 text-sm mb-6">Manage your account and health profile.</p>
+      <main className="app-main visual-page visual-page-profile flex-1 p-5 pt-20 md:p-8">
+        <section className="project-page-hero mb-6 overflow-hidden rounded-3xl bg-gradient-to-r from-teal-800 via-emerald-700 to-cyan-600 px-6 py-7 text-white shadow-lg shadow-emerald-950/10">
+          <div className="relative z-10 max-w-xl sm:pr-36">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100">Your private space</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Profile</h1>
+            <p className="mt-2 text-sm leading-6 text-emerald-50">Manage your account and the health details that support a more personal screening experience.</p>
+          </div>
+          <PageVisual visual="profile" className="project-hero-visual project-hero-visual-compact" />
+        </section>
 
         {account && (
           <div className="card mb-6">

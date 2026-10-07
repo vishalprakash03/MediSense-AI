@@ -1,5 +1,5 @@
 """
-Cleans the raw downloaded datasets and produces the three training CSVs
+Cleans the raw downloaded datasets and produces the five training CSVs
 consumed by ml/training/train_models.py:
 
   diabetes.csv        - real Pima Indians Diabetes data
@@ -8,6 +8,11 @@ consumed by ml/training/train_models.py:
                          August 2021–August 2023
                          survey, using repeated measured blood-pressure values
                          to assign a hypertension label
+  chronic_kidney_disease.csv - numeric clinical fields from UCI's Chronic
+                         Kidney Disease Dataset
+  stroke.csv          - selected CDC BRFSS 2023 survey fields; label is an
+                         adult's self-reported history of being told they had
+                         a stroke (screening association, not a diagnosis)
 
 Run after download_real_data.py:
 
@@ -37,6 +42,26 @@ NHANES_FILES = {
     "smoking": "nhanes_smoking_2021_2023.xpt",
     "blood_pressure": "nhanes_blood_pressure_2021_2023.xpt",
 }
+
+CKD_FILE = "ckd_uci.csv"
+BRFSS_FILE = "brfss_2023.xpt"
+
+CKD_FEATURES = {
+    "age": "age",
+    "bp": "kidney_blood_pressure",
+    "bgr": "blood_glucose",
+    "bu": "blood_urea",
+    "sc": "serum_creatinine",
+    "hemo": "hemoglobin",
+}
+
+# BRFSS variable meanings are documented in the 2023 annual codebook. The
+# values below intentionally retain only answers that map directly to the
+# assistant's unambiguous yes/no questions.
+BRFSS_COLUMNS = [
+    "CVDSTRK3", "SEXVAR", "_AGE80", "_BMI5", "_SMOKER3", "_TOTINDA",
+    "BPHIGH6", "DIABETE4", "TOLDHI3",
+]
 
 
 def prepare_diabetes():
@@ -168,8 +193,110 @@ def prepare_hypertension():
     return df
 
 
+def prepare_chronic_kidney_disease():
+    """Prepare a small, traceable numeric CKD screening dataset from UCI.
+
+    The source contains missing values. After converting the selected numeric
+    laboratory fields, source-data medians are used only for missing cells;
+    no synthetic records are created. The user-facing service requires recent
+    urea, creatinine, and haemoglobin values before it will show this model.
+    """
+    path = os.path.join(RAW_DIR, CKD_FILE)
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Missing UCI source file: {CKD_FILE}")
+
+    raw = pd.read_csv(path, na_values=["?", "\\t?"])
+    missing_columns = [column for column in [*CKD_FEATURES, "class"] if column not in raw.columns]
+    if missing_columns:
+        raise ValueError(f"UCI CKD source is missing expected columns: {missing_columns}")
+
+    df = raw[[*CKD_FEATURES, "class"]].rename(columns=CKD_FEATURES).copy()
+    for column in CKD_FEATURES.values():
+        df[column] = pd.to_numeric(df[column], errors="coerce")
+    classes = df.pop("class").astype(str).str.strip().str.lower()
+    df["label"] = (classes == "ckd").astype(int)
+    df = df[classes.isin({"ckd", "notckd"})].copy()
+
+    # Remove clearly invalid values before source-median imputation.
+    valid_ranges = {
+        "age": (1, 120), "kidney_blood_pressure": (30, 300),
+        "blood_glucose": (20, 1000), "blood_urea": (1, 500),
+        "serum_creatinine": (0.1, 50), "hemoglobin": (1, 30),
+    }
+    for column, (low, high) in valid_ranges.items():
+        df.loc[~df[column].between(low, high), column] = np.nan
+        df[column] = df[column].fillna(df[column].median())
+
+    out_path = os.path.join(OUT_DIR, "chronic_kidney_disease.csv")
+    df.to_csv(out_path, index=False)
+    print(
+        f"chronic_kidney_disease.csv: {df.shape[0]} rows, "
+        f"positive rate {df.label.mean():.3f} -> {out_path}"
+    )
+    return df
+
+
+def prepare_stroke():
+    """Build a precise, patient-question-aligned BRFSS 2023 stroke dataset.
+
+    The annual XPT file is large, so pandas reads it in chunks and retains just
+    nine needed variables. The target is `CVDSTRK3 == 1` (reported history of
+    being told one had a stroke), *not* a clinical diagnosis or future-event
+    label. Unsupported, unknown, and pregnancy-only response codes are removed.
+    """
+    path = os.path.join(RAW_DIR, BRFSS_FILE)
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Missing CDC BRFSS source file: {BRFSS_FILE}")
+
+    chunks = []
+    reader = pd.read_sas(path, format="xport", encoding="utf-8", chunksize=25_000)
+    for chunk in reader:
+        missing_columns = [column for column in BRFSS_COLUMNS if column not in chunk.columns]
+        if missing_columns:
+            raise ValueError(f"BRFSS source is missing expected columns: {missing_columns}")
+        chunks.append(chunk[BRFSS_COLUMNS].copy())
+    raw = pd.concat(chunks, ignore_index=True)
+
+    # Keep only response codes that can truthfully be asked and answered in
+    # this application. Current smoking is everyday/some-days; former/never
+    # smoking are both non-current smoking.
+    valid = (
+        raw["CVDSTRK3"].isin([1, 2])
+        & raw["SEXVAR"].isin([1, 2])
+        & raw["_AGE80"].between(18, 80)
+        & raw["_BMI5"].between(1_000, 10_000)
+        & raw["_SMOKER3"].isin([1, 2, 3, 4])
+        & raw["_TOTINDA"].isin([1, 2])
+        & raw["BPHIGH6"].isin([1, 3, 4])
+        & raw["DIABETE4"].isin([1, 3])
+        & raw["TOLDHI3"].isin([1, 2])
+    )
+    raw = raw[valid].copy()
+
+    df = pd.DataFrame({
+        "age": raw["_AGE80"].astype(float),
+        "sex": (raw["SEXVAR"] == 1).astype(int),
+        "bmi": raw["_BMI5"].astype(float) / 100,
+        "smoking": raw["_SMOKER3"].isin([1, 2]).astype(int),
+        "physically_active": (raw["_TOTINDA"] == 1).astype(int),
+        "hypertension_diagnosis": (raw["BPHIGH6"] == 1).astype(int),
+        "diabetes_diagnosis": (raw["DIABETE4"] == 1).astype(int),
+        "high_cholesterol": (raw["TOLDHI3"] == 1).astype(int),
+        "label": (raw["CVDSTRK3"] == 1).astype(int),
+    })
+    out_path = os.path.join(OUT_DIR, "stroke.csv")
+    df.to_csv(out_path, index=False)
+    print(
+        f"stroke.csv: {df.shape[0]} rows, self-reported stroke-history rate "
+        f"{df.label.mean():.3f} -> {out_path}"
+    )
+    return df
+
+
 if __name__ == "__main__":
-    missing = [f for f in ("diabetes_raw.csv", "heart_raw.csv", *NHANES_FILES.values())
+    missing = [f for f in (
+        "diabetes_raw.csv", "heart_raw.csv", *NHANES_FILES.values(), CKD_FILE, BRFSS_FILE,
+    )
                if not os.path.exists(os.path.join(RAW_DIR, f))]
     if missing:
         raise SystemExit(
@@ -180,4 +307,6 @@ if __name__ == "__main__":
     prepare_diabetes()
     prepare_cardiovascular()
     prepare_hypertension()
+    prepare_chronic_kidney_disease()
+    prepare_stroke()
     print("\nDone. Next, run: python3 ml/training/train_models.py")

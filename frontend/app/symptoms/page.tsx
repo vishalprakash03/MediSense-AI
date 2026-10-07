@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import Sidebar from "@/components/Sidebar";
+import PageVisual from "@/components/PageVisual";
 import { getToken, listSymptomCheckIns } from "@/services/api";
 
 type CheckIn = {
@@ -82,13 +83,16 @@ export default function SymptomsPage() {
   }, [checkins]);
 
   return (
-    <div className="flex">
+    <div className="app-shell flex">
       <Sidebar />
-      <main className="min-h-screen flex-1 space-y-6 p-5 pt-20 md:p-8">
-        <section className="rounded-3xl bg-gradient-to-r from-violet-700 via-indigo-700 to-cyan-700 px-6 py-7 text-white shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-100">Personal monitoring</p>
-          <h1 className="mt-2 text-3xl font-semibold">Symptoms & notes</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-violet-50">Review what you recorded, notice recurring patterns, and prepare clearer information for a healthcare appointment.</p>
+      <main className="app-main visual-page visual-page-symptoms flex-1 space-y-6 p-5 pt-20 md:p-8">
+        <section className="project-page-hero overflow-hidden rounded-3xl bg-gradient-to-r from-violet-700 via-indigo-700 to-cyan-700 px-6 py-7 text-white shadow-sm">
+          <div className="relative z-10 max-w-2xl md:pr-44">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-100">Personal monitoring</p>
+            <h1 className="mt-2 text-3xl font-semibold">Symptoms & notes</h1>
+            <p className="mt-2 text-sm leading-6 text-violet-50">Review what you recorded, notice recurring patterns, and prepare clearer information for a healthcare appointment.</p>
+          </div>
+          <PageVisual visual="symptoms" className="project-hero-visual" />
         </section>
 
         <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">

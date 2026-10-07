@@ -6,6 +6,7 @@ type Prediction = {
   algorithm_used?: string;
   input_coverage_percent?: number | null;
   assumed_features?: string[];
+  result_note?: string;
 };
 
 const RISK_CLASS: Record<string, string> = {
@@ -31,6 +32,12 @@ export default function RiskCard({ prediction }: { prediction: Prediction }) {
       {prediction.probability_percent != null && (
         <p className="text-sm text-gray-500 mb-2">
           Estimated likelihood: <strong>{prediction.probability_percent}%</strong>
+        </p>
+      )}
+
+      {prediction.result_note && (
+        <p className="mb-3 rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-xs leading-5 text-sky-900">
+          {prediction.result_note}
         </p>
       )}
 

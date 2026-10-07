@@ -31,12 +31,12 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-10">
-      <div className="card w-full max-w-md">
+    <div className="medical-auth-page flex items-center justify-center px-4 py-10">
+      <div className="card medical-auth-card w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="text-3xl mb-2">🩺</div>
+          <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-brand-100 to-cyan-100 text-3xl shadow-sm">🩺</div>
           <h1 className="text-xl font-semibold text-brand-700">Create your account</h1>
-          <p className="text-sm text-gray-500 mt-1">Start tracking your health with MediSense AI</p>
+          <p className="text-sm text-gray-600 mt-1">Start your private health-monitoring journey</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

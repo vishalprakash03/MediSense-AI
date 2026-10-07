@@ -2,6 +2,13 @@ type Recommendations = {
   today?: string[];
   food?: string[];
   watchouts?: string[];
+  condition_guidance?: ConditionGuidance[];
+};
+
+type ConditionGuidance = {
+  condition: string;
+  lifestyle: string[];
+  food: string[];
 };
 
 function List({ items }: { items?: string[] }) {
@@ -36,6 +43,25 @@ export default function WellbeingPlan({ recommendations }: { recommendations?: R
         <div className="border-t border-red-100 bg-red-50 px-5 py-4">
           <p className="text-sm font-semibold text-red-900">When to seek care</p>
           <List items={recommendations.watchouts} />
+        </div>
+      ) : null}
+      {recommendations.condition_guidance?.length ? (
+        <div className="border-t border-slate-100 p-5">
+          <div className="mb-4">
+            <p className="text-sm font-semibold text-slate-800">Guidance for each screening</p>
+            <p className="mt-1 text-xs leading-5 text-slate-500">These suggestions support health; they do not confirm a condition or replace a personal care plan.</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {recommendations.condition_guidance.map((guidance) => (
+              <article key={guidance.condition} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <h3 className="font-semibold text-slate-800">{guidance.condition}</h3>
+                <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-brand-700">Lifestyle</p>
+                <List items={guidance.lifestyle} />
+                <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-amber-800">Food</p>
+                <List items={guidance.food} />
+              </article>
+            ))}
+          </div>
         </div>
       ) : null}
     </section>

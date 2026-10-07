@@ -29,16 +29,19 @@ The models are trained on real, publicly available clinical datasets:
 | Diabetes | Pima Indians Diabetes Dataset (NIDDK) | 768 real patients |
 | Cardiovascular Risk | UCI Cleveland Heart Disease Dataset | 303 real patients |
 | Hypertension | CDC/NCHS NHANES August 2021–August 2023 adult survey; label derived from repeated measured blood pressure (mean systolic ≥130 mmHg or diastolic ≥80 mmHg) | Prepared locally from official survey components |
+| Chronic Kidney Disease Risk | UCI Chronic Kidney Disease Dataset | 400 hospital records |
+| Stroke Risk Screening | CDC Behavioral Risk Factor Surveillance System (BRFSS) 2023 | Prepared locally from 321,183 validated survey responses |
 
 ```bash
 cd ml
 python3 datasets/download_real_data.py   # downloads the source data (needs internet)
-python3 datasets/prepare_real_data.py    # cleans + derives the 3 training CSVs into datasets/
+python3 datasets/prepare_real_data.py    # cleans + derives the 5 training CSVs into datasets/
 python3 training/train_models.py         # trains + compares models, saves best one per disease to ml/models/
 ```
 
-This produces `ml/models/diabetes_model.joblib`, `hypertension_model.joblib`, and
-`cardiovascular_model.joblib`, each bundled with its scaler, feature order,
+This produces `ml/models/diabetes_model.joblib`, `hypertension_model.joblib`,
+`cardiovascular_model.joblib`, `chronic_kidney_disease_model.joblib`, and
+`stroke_model.joblib`, each bundled with its scaler, feature order,
 **data-driven per-feature defaults** (training-data medians), and metadata
 (`chosen_algorithm`, cross-validated / held-out AUC) in a single joblib file.
 
@@ -56,6 +59,14 @@ This produces `ml/models/diabetes_model.joblib`, `hypertension_model.joblib`, an
 > only age, sex, BMI, and smoking history—the inputs the app collects. It is shown
 > only after its saved held-out evaluation meets the project's probability-trust
 > threshold; otherwise the API returns an unavailable state rather than a risk label.
+>
+> **Kidney and stroke screening:** The kidney model requires recent urea,
+> creatinine, and haemoglobin readings; it is withheld if those inputs are not
+> available. The stroke model uses BRFSS 2023 survey responses and its target is
+> a participant reporting they were told they had a stroke. Therefore it is shown
+> as a *stroke risk screening association* only—not a diagnosis or a prediction
+> of a first stroke. Both models are subject to the same saved evaluation and
+> probability-trust gate as the existing models.
 >
 > If either data source mirror ever goes down, search for "pima indians diabetes csv"
 > or "UCI heart disease heart.csv" — any mirror with matching column names
@@ -117,16 +128,16 @@ All endpoints except register/login use the authenticated session cookie.
 
 ## 6. Adding a new disease model later
 
-1. Add a data-generation function in `ml/datasets/generate_data.py`.
-2. Add a training block in `ml/training/train_models.py` (same pattern as the existing three).
-3. Register the new model + its feature list in `ml/prediction/predict.py`'s `MODEL_REGISTRY`.
+1. Add a documented, public source and a preparation function in `ml/datasets/prepare_real_data.py`.
+2. Add a training block in `ml/training/train_models.py`.
+3. Register the model, feature labels, and any screening note in `ml/prediction/predict.py`'s `MODEL_REGISTRY`.
+4. Add required user inputs to `backend/services/ml_service.py`; withhold the result if they are unavailable.
 
 No other code needs to change — the API, dashboard, and history views are disease-agnostic.
 
 ## 7. Recent research references (2023–2026)
 
-The application includes a **Research & References** page at `/references`. The
-following sources support the project presentation, its health-monitoring
+The following sources support the project presentation, its health-monitoring
 workflow, and its safety-first screening approach. They do not make the app a
 diagnostic or treatment service.
 
@@ -137,3 +148,9 @@ diagnostic or treatment service.
 5. Wan, S., Wan, F., & Dai, X. J. (2025). *Machine Learning Approaches for Cardiovascular Disease Prediction: A Review.* Archives of Cardiovascular Diseases, 118(10), 554–562. https://doi.org/10.1016/j.acvd.2025.04.055
 6. Wang, Y., Wang, C., & Wang, J. (2026). *Prediction Models for Progression From Prediabetes to Diabetes: A Systematic Review and Meta-analysis.* Frontiers in Endocrinology, 17, 1888466. https://doi.org/10.3389/fendo.2026.1888466
 7. Barada, S., & Selvanambi, R. (2026). *Artificial Intelligence for Early Prediction of Gestational Diabetes Mellitus and Preeclampsia: A Systematic Review of Machine Learning Models and Clinical Decision Support Systems.* Frontiers in Artificial Intelligence, 9, 1890320. https://doi.org/10.3389/frai.2026.1890320
+
+## 8. Dataset references
+
+1. Rubini, L., Soundarapandian, P., & Eswaran, P. (2015). *Chronic Kidney Disease* [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5G020
+2. Centers for Disease Control and Prevention. (2023). *Behavioral Risk Factor Surveillance System: 2023 annual data*. https://www.cdc.gov/brfss/annual_data/annual_2023.html
+3. Centers for Disease Control and Prevention, National Center for Health Statistics. (2021–2023). *National Health and Nutrition Examination Survey (NHANES)*. https://wwwn.cdc.gov/nchs/nhanes/search/datapage.aspx?Component=Demographics&Cycle=2021-2023

@@ -2,9 +2,180 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  background-color: #cce9ee;
+}
+
 body {
-  background: #f7faf9;
+  min-height: 100vh;
+  background-color: #cce9ee !important;
+  background-image:
+    radial-gradient(circle at 5% 3%, rgba(6, 130, 119, 0.30), transparent 28rem),
+    radial-gradient(circle at 98% 12%, rgba(22, 108, 190, 0.28), transparent 30rem),
+    linear-gradient(135deg, rgba(224, 250, 247, 0.48), rgba(195, 228, 239, 0.72)),
+    linear-gradient(rgba(16, 129, 142, 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 129, 142, 0.11) 1px, transparent 1px),
+    url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%230a887a' stroke-opacity='.24' stroke-width='2'%3E%3Cpath d='M35 30v18M26 39h18M190 176v20M180 186h20'/%3E%3Ccircle cx='204' cy='48' r='8'/%3E%3Cpath d='M58 188c13-17 32-17 45 0M69 188c0-11 23-11 23 0'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: auto, auto, auto, 32px 32px, 32px 32px, 240px 240px;
+  background-attachment: fixed;
   color: #14232b;
+}
+
+.medical-auth-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    linear-gradient(115deg, rgba(3, 96, 98, 0.16), rgba(34, 151, 203, 0.10)),
+    url("/medical-login-dashboard.svg") center / cover fixed;
+}
+
+.medical-auth-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.9;
+  background-image:
+    radial-gradient(circle at 50% 43%, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.04) 31rem, transparent 50rem),
+    linear-gradient(90deg, rgba(239, 255, 255, 0.10) 1px, transparent 1px),
+    linear-gradient(rgba(239, 255, 255, 0.10) 1px, transparent 1px);
+  background-size: auto, 72px 72px, 72px 72px;
+}
+
+.medical-auth-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.medical-auth-card {
+  border-color: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 28px 72px rgba(4, 61, 82, 0.30);
+  backdrop-filter: blur(16px);
+}
+
+.app-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 86% 5%, rgba(30, 147, 159, 0.20), transparent 24rem),
+    radial-gradient(circle at 10% 95%, rgba(35, 119, 180, 0.16), transparent 28rem);
+}
+
+.app-main {
+  min-height: 100vh;
+  background-color: rgba(224, 243, 245, 0.76);
+  background-image:
+    linear-gradient(rgba(14, 123, 132, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 123, 132, 0.08) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.visual-page {
+  position: relative;
+  isolation: isolate;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.visual-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.visual-page-dashboard {
+  background-image:
+    linear-gradient(115deg, rgba(220, 249, 246, 0.83), rgba(219, 238, 249, 0.74)),
+    url("/scene-dashboard-health.svg");
+}
+
+.visual-page-assistant {
+  background-image:
+    linear-gradient(115deg, rgba(225, 250, 246, 0.83), rgba(229, 224, 250, 0.74)),
+    url("/scene-ai-assistant.svg");
+}
+
+.visual-page-monitoring {
+  background-image:
+    linear-gradient(115deg, rgba(223, 247, 249, 0.88), rgba(205, 236, 246, 0.75)),
+    url("/medical-stethoscope-background.jpg");
+}
+
+.visual-page-symptoms {
+  background-image:
+    linear-gradient(115deg, rgba(242, 237, 255, 0.83), rgba(223, 246, 250, 0.76)),
+    url("/scene-symptom-journal.svg");
+}
+
+.visual-page-history {
+  background-image:
+    linear-gradient(115deg, rgba(228, 241, 255, 0.83), rgba(222, 246, 243, 0.74)),
+    url("/scene-history-insights.svg");
+}
+
+.visual-page-profile {
+  background-image:
+    linear-gradient(115deg, rgba(223, 249, 242, 0.84), rgba(220, 238, 252, 0.75)),
+    url("/scene-profile-wellbeing.svg");
+}
+
+.visual-page .card {
+  background-color: rgba(255, 255, 255, 0.91);
+  border-color: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 16px 38px rgba(27, 89, 109, 0.14);
+  backdrop-filter: blur(15px);
+}
+
+.project-page-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 10.75rem;
+}
+
+.project-page-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.22), transparent 10rem),
+    linear-gradient(120deg, transparent 46%, rgba(255, 255, 255, 0.08));
+}
+
+.page-visual {
+  pointer-events: none;
+  user-select: none;
+}
+
+.project-hero-visual {
+  position: absolute;
+  z-index: 1;
+  right: -1.25rem;
+  bottom: -2.8rem;
+  width: 20rem;
+  opacity: 0.98;
+  filter: drop-shadow(0 18px 22px rgba(2, 31, 47, 0.20));
+}
+
+.project-hero-visual-compact {
+  right: -2.2rem;
+  width: 15.5rem;
+}
+
+@media (max-width: 1023px) {
+  .project-hero-visual {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .visual-page {
+    background-attachment: scroll;
+  }
 }
 
 ::selection { background: #b8eadb; color: #073f30; }
@@ -14,13 +185,25 @@ body {
 .risk-high { @apply bg-red-100 text-red-700; }
 
 .card {
-  @apply rounded-2xl border border-slate-100 bg-white p-6 shadow-sm;
+  @apply rounded-2xl border border-slate-100 bg-white/95 p-6 shadow-sm;
+  border-color: rgba(207, 228, 232, 0.9);
+  box-shadow: 0 12px 30px rgba(20, 83, 95, 0.08);
+  backdrop-filter: blur(8px);
 }
 
 .btn-primary {
-  @apply bg-brand-500 hover:bg-brand-600 text-white font-medium rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply text-white font-medium rounded-xl px-5 py-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+  background-image: linear-gradient(135deg, #087f71, #139f85 55%, #237eaa);
+  box-shadow: 0 8px 18px rgba(8, 127, 113, 0.22);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(8, 127, 113, 0.28);
 }
 
 .input-field {
-  @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500;
+  @apply w-full rounded-xl border bg-white px-4 py-2.5 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500;
+  border-color: #c9e2e5;
+  box-shadow: inset 0 1px 2px rgba(26, 83, 95, 0.04);
 }

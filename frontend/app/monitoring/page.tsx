@@ -5,6 +5,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import Sidebar from "@/components/Sidebar";
+import PageVisual from "@/components/PageVisual";
 import { getToken, addMeasurement, listMeasurements } from "@/services/api";
 
 export default function MonitoringPage() {
@@ -58,13 +59,17 @@ export default function MonitoringPage() {
   }));
 
   return (
-    <div className="flex">
+    <div className="app-shell flex">
       <Sidebar />
-      <main className="flex-1 space-y-6 p-5 pt-20 md:p-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-800">Health Monitoring</h1>
-          <p className="text-gray-500 text-sm mt-1">Log measurements and track trends over time.</p>
-        </div>
+      <main className="app-main visual-page visual-page-monitoring flex-1 space-y-6 p-5 pt-20 md:p-8">
+        <section className="project-page-hero overflow-hidden rounded-3xl bg-gradient-to-r from-sky-800 via-cyan-700 to-teal-600 px-6 py-7 text-white shadow-lg shadow-cyan-950/10">
+          <div className="relative z-10 max-w-2xl md:pr-44">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100">Personal health tracking</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Health monitoring</h1>
+            <p className="mt-2 text-sm leading-6 text-cyan-50">Log your measurements and see how your health information changes over time.</p>
+          </div>
+          <PageVisual visual="monitoring" className="project-hero-visual" />
+        </section>
 
         <div className="card">
           <h2 className="font-semibold text-gray-800 mb-4">Update Health Parameters</h2>

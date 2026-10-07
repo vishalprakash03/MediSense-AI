@@ -23,8 +23,13 @@ class AssessmentAnswers(BaseModel):
     resting_heart_rate: Optional[float] = Field(None, ge=20, le=300)
     sodium_diet_level: Optional[int] = Field(None, ge=1, le=10)
     cholesterol_proxy: Optional[float] = Field(None, ge=50, le=1000)
+    hypertension_diagnosis: Optional[bool] = None
     pregnancy_context: Optional[str] = None
     diabetes_flag: Optional[bool] = None
+    high_cholesterol_diagnosis: Optional[bool] = None
+    blood_urea: Optional[float] = Field(None, ge=1, le=400)
+    serum_creatinine: Optional[float] = Field(None, ge=0.1, le=30)
+    hemoglobin: Optional[float] = Field(None, ge=1, le=30)
     symptoms: Optional[List[str]] = None
     symptom_duration: Optional[str] = Field(None, max_length=200)
     symptom_trend: Optional[str] = Field(None, max_length=100)

@@ -6,6 +6,7 @@ import Sidebar from "@/components/Sidebar";
 import Disclaimer from "@/components/Disclaimer";
 import RiskCard from "@/components/RiskCard";
 import SymptomReminder from "@/components/SymptomReminder";
+import PageVisual from "@/components/PageVisual";
 import { getToken, getUser, getLatest, listMeasurements } from "@/services/api";
 
 export default function DashboardPage() {
@@ -31,13 +32,16 @@ export default function DashboardPage() {
   }, [router]);
 
   return (
-    <div className="flex">
+    <div className="app-shell flex">
       <Sidebar />
-      <main className="flex-1 space-y-6 p-5 pt-20 md:p-8">
-        <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-brand-800 to-brand-500 px-6 py-8 text-white shadow-xl shadow-brand-900/10">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-100">Your health space</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Welcome back{user?.name ? `, ${user.name}` : ""}.</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-50">Check in, keep your measurements organized, and use your results as a conversation starter with a healthcare professional.</p>
+      <main className="app-main visual-page visual-page-dashboard flex-1 space-y-6 p-5 pt-20 md:p-8">
+        <section className="project-page-hero overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-brand-800 to-brand-500 px-6 py-8 text-white shadow-xl shadow-brand-900/10">
+          <div className="relative z-10 max-w-2xl md:pr-44">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-100">Your health space</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Welcome back{user?.name ? `, ${user.name}` : ""}.</h1>
+            <p className="mt-2 text-sm leading-6 text-brand-50">Check in, keep your measurements organized, and use your results as a conversation starter with a healthcare professional.</p>
+          </div>
+          <PageVisual visual="dashboard" className="project-hero-visual" />
         </section>
 
         <Disclaimer />

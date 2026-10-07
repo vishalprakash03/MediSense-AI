@@ -86,7 +86,9 @@ async def predict(payload: PredictRequest, user_id: str = Depends(get_current_us
         "unavailable_predictions": prediction["unavailable_predictions"],
         "overall_risk": prediction["overall_risk"],
         "recommendations": build_recommendations(
-            payload.answers.dict(exclude_none=True), prediction["overall_risk"]
+            payload.answers.dict(exclude_none=True),
+            prediction["overall_risk"],
+            prediction["predicted_conditions"],
         ),
         "created_at": datetime.utcnow(),
     }

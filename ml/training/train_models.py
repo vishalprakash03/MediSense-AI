@@ -38,23 +38,47 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 # numeric probability, per the "don't show an uncalibrated probability" rule.
 PROBABILITY_TRUST_THRESHOLD = 0.65
 
-CANDIDATES = {
-    "random_forest": RandomForestClassifier(n_estimators=300, max_depth=6, random_state=42),
-    "decision_tree": DecisionTreeClassifier(max_depth=5, random_state=42),
-    "logistic_regression": LogisticRegression(max_iter=2000),
-    "svm": SVC(probability=True, kernel="rbf", random_state=42),
-}
+def make_candidates(class_weight=None, xgb_scale_pos_weight=1.0, include_svm=True):
+    """Return fresh estimators for a fair comparison on each dataset."""
+    candidates = {
+        "random_forest": RandomForestClassifier(
+            n_estimators=300, max_depth=6, random_state=42,
+            class_weight=class_weight, n_jobs=-1,
+        ),
+        "decision_tree": DecisionTreeClassifier(
+            max_depth=5, random_state=42, class_weight=class_weight,
+        ),
+        "logistic_regression": LogisticRegression(
+            max_iter=2000, class_weight=class_weight,
+        ),
+    }
+    # An RBF SVM has quadratic memory/time behaviour. It is included for the
+    # small clinical datasets but deliberately omitted for the large BRFSS
+    # survey dataset below.
+    if include_svm:
+        candidates["svm"] = SVC(
+            probability=True, kernel="rbf", random_state=42, class_weight=class_weight,
+        )
+    if _HAS_XGBOOST:
+        candidates["xgboost"] = XGBClassifier(
+            n_estimators=250, max_depth=4, learning_rate=0.08,
+            eval_metric="logloss", random_state=42, n_jobs=-1,
+            scale_pos_weight=xgb_scale_pos_weight,
+        )
+    return candidates
 
-if _HAS_XGBOOST:
-    CANDIDATES["xgboost"] = XGBClassifier(
-        n_estimators=250, max_depth=4, learning_rate=0.08,
-        eval_metric="logloss", random_state=42,
-    )
 
-
-def train_one(disease_name, csv_file, feature_cols):
+def train_one(
+    disease_name, csv_file, feature_cols, class_weight=None,
+    xgb_scale_pos_weight=1.0, max_training_rows=None, include_svm=True,
+):
     print(f"\n=== Training models for: {disease_name} ===")
     df = pd.read_csv(os.path.join(DATA_DIR, csv_file))
+    if max_training_rows and len(df) > max_training_rows:
+        df, _ = train_test_split(
+            df, train_size=max_training_rows, random_state=42, stratify=df["label"],
+        )
+        print(f"  Using a stratified {len(df):,}-row training sample from {csv_file}")
     X = df[feature_cols].values
     y = df["label"].values
 
@@ -69,7 +93,9 @@ def train_one(disease_name, csv_file, feature_cols):
     best_name, best_model, best_score = None, None, -1
     results = {}
 
-    for name, base_model in CANDIDATES.items():
+    for name, base_model in make_candidates(
+        class_weight, xgb_scale_pos_weight, include_svm,
+    ).items():
         cv_scores = cross_val_score(base_model, X_train_s, y_train, cv=5, scoring="roc_auc")
         mean_cv = cv_scores.mean()
         results[name] = mean_cv
@@ -107,6 +133,7 @@ def train_one(disease_name, csv_file, feature_cols):
         "test_accuracy": round(test_acc, 4),
         "probability_trusted": bool(test_auc >= PROBABILITY_TRUST_THRESHOLD),
         "candidate_scores": {k: round(v, 4) for k, v in results.items()},
+        "training_rows": int(len(df)),
     }
     out_path = os.path.join(MODEL_DIR, f"{disease_name}_model.joblib")
     joblib.dump(bundle, out_path)
@@ -138,5 +165,24 @@ if __name__ == "__main__":
         ["age", "sex", "chest_pain_type", "resting_bp", "cholesterol",
          "fasting_blood_sugar_high", "resting_ecg", "max_heart_rate",
          "exercise_angina", "st_depression", "st_slope", "major_vessels", "thalassemia"],
+    )
+    train_one(
+        "chronic_kidney_disease", "chronic_kidney_disease.csv",
+        ["age", "kidney_blood_pressure", "blood_glucose", "blood_urea", "serum_creatinine", "hemoglobin"],
+    )
+    # Stroke-history reports are uncommon in BRFSS. Weighting makes each
+    # candidate consider the minority class during selection; the final
+    # CalibratedClassifierCV step restores probability calibration.
+    stroke_df = pd.read_csv(os.path.join(DATA_DIR, "stroke.csv"))
+    positive_count = int(stroke_df["label"].sum())
+    negative_count = int((stroke_df["label"] == 0).sum())
+    train_one(
+        "stroke", "stroke.csv",
+        ["age", "sex", "bmi", "smoking", "physically_active", "hypertension_diagnosis",
+         "diabetes_diagnosis", "high_cholesterol"],
+        class_weight="balanced",
+        xgb_scale_pos_weight=negative_count / max(positive_count, 1),
+        max_training_rows=100_000,
+        include_svm=False,
     )
     print("\nAll models trained and saved to ml/models/")

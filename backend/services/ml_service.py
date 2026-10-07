@@ -35,6 +35,13 @@ MINIMUM_USER_FEATURES = {
     "diabetes": ("age", "bmi", "glucose"),
     "cardiovascular": ("age", "sex", "resting_bp", "cholesterol", "max_heart_rate"),
     "hypertension": ("age", "sex", "bmi", "smoking"),
+    "chronic_kidney_disease": (
+        "age", "kidney_blood_pressure", "blood_urea", "serum_creatinine", "hemoglobin",
+    ),
+    "stroke": (
+        "age", "sex", "bmi", "smoking", "physically_active",
+        "hypertension_diagnosis", "diabetes_diagnosis", "high_cholesterol",
+    ),
 }
 
 
@@ -69,6 +76,20 @@ def _smoking_to_numeric(smoking):
     return None
 
 
+def _boolean_to_numeric(value):
+    """Translate a structured yes/no assessment answer without guessing."""
+    if isinstance(value, bool):
+        return int(value)
+    if value is None:
+        return None
+    normalized = str(value).strip().lower()
+    if normalized in {"yes", "true", "1"}:
+        return 1
+    if normalized in {"no", "false", "0"}:
+        return 0
+    return None
+
+
 def _map_user_inputs(answers: dict, profile: dict) -> dict:
     """Collects everything the app actually knows about the user into a flat
     dict keyed by the *dataset* feature names, doing unit/field translation
@@ -89,6 +110,21 @@ def _map_user_inputs(answers: dict, profile: dict) -> dict:
         "max_heart_rate": merged.get("heart_rate") or merged.get("resting_heart_rate"),
         "glucose": merged.get("fasting_glucose_proxy"),
         "smoking": smoking,
+        # The kidney model's source calls this feature simply "blood pressure".
+        # The assistant asks for the top (systolic) value, so keep that direct
+        # user value distinct from the diabetes model's derived diastolic proxy.
+        "kidney_blood_pressure": merged.get("systolic_bp"),
+        "blood_glucose": merged.get("fasting_glucose_proxy"),
+        "blood_urea": merged.get("blood_urea"),
+        "serum_creatinine": merged.get("serum_creatinine"),
+        "hemoglobin": merged.get("hemoglobin"),
+        "physically_active": (
+            int(float(merged["physical_activity_hours"]) > 0)
+            if merged.get("physical_activity_hours") is not None else None
+        ),
+        "hypertension_diagnosis": _boolean_to_numeric(merged.get("hypertension_diagnosis")),
+        "diabetes_diagnosis": _boolean_to_numeric(merged.get("diabetes_flag")),
+        "high_cholesterol": _boolean_to_numeric(merged.get("high_cholesterol_diagnosis")),
     }
     # Diastolic BP isn't collected directly; approximate it from systolic
     # (roughly 2/3 of systolic is a commonly used rough clinical rule of

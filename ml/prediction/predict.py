@@ -8,6 +8,8 @@ ml/datasets/download_real_data.py and prepare_real_data.py):
   - hypertension:   derived from the CDC/NCHS NHANES August 2021–August 2023 survey's
                      repeated blood-pressure measurements (see prepare_real_data.py)
   - cardiovascular: UCI Cleveland Heart Disease Dataset
+  - chronic_kidney_disease: UCI Chronic Kidney Disease Dataset
+  - stroke: BRFSS 2023 (CDC) self-reported health survey
 
 Adding a new disease later = add one entry to MODEL_REGISTRY (feature list +
 a human-readable label per feature) and drop a matching `<name>_model.joblib`
@@ -41,7 +43,7 @@ MODEL_REGISTRY = {
         "display_name": "Hypertension",
         "features": {
             "age": "Age",
-            "sex": "Sex assigned at birth",
+            "sex": "Recorded biological profile",
             "bmi": "Body Mass Index (BMI)",
             "smoking": "Smoking history",
         },
@@ -65,11 +67,45 @@ MODEL_REGISTRY = {
             "thalassemia": "Thalassemia test result",
         },
     },
+    "chronic_kidney_disease": {
+        "file": "chronic_kidney_disease_model.joblib",
+        "display_name": "Chronic Kidney Disease Risk",
+        "features": {
+            "age": "Age",
+            "kidney_blood_pressure": "Blood pressure result",
+            "blood_glucose": "Blood glucose result",
+            "blood_urea": "Blood urea result",
+            "serum_creatinine": "Serum creatinine result",
+            "hemoglobin": "Haemoglobin result",
+        },
+    },
+    "stroke": {
+        "file": "stroke_model.joblib",
+        "display_name": "Stroke Risk Screening",
+        "features": {
+            "age": "Age",
+            "sex": "Recorded biological profile",
+            "bmi": "Body Mass Index (BMI)",
+            "smoking": "Current smoking",
+            "physically_active": "Physical activity",
+            "hypertension_diagnosis": "History of high blood pressure",
+            "diabetes_diagnosis": "History of diabetes",
+            "high_cholesterol": "History of high cholesterol",
+        },
+        # BRFSS stroke-history prevalence is much lower than the other target
+        # datasets, so its screening bands are calibrated for that source
+        # population rather than applying the general 33%/66% cutoffs.
+        "risk_thresholds": (0.03, 0.08),
+        "result_note": (
+            "This survey-based screening estimates association with a reported "
+            "history of stroke. It cannot diagnose a stroke or predict a first stroke."
+        ),
+    },
 }
 
 # Features where a LOWER value than the training-data baseline increases risk
 # (protective factors). Everything else assumes higher-than-baseline = more risk.
-PROTECTIVE = {"max_heart_rate"}
+PROTECTIVE = {"max_heart_rate", "physically_active", "hemoglobin"}
 
 _loaded_bundles = {}
 
@@ -105,10 +141,13 @@ def get_model_metadata(disease_key):
     }
 
 
-def _risk_level(probability):
-    if probability < 0.33:
+def _risk_level(disease_key, probability):
+    low_threshold, high_threshold = MODEL_REGISTRY[disease_key].get(
+        "risk_thresholds", (0.33, 0.66)
+    )
+    if probability < low_threshold:
         return "Low"
-    elif probability < 0.66:
+    elif probability < high_threshold:
         return "Moderate"
     return "High"
 
@@ -153,10 +192,11 @@ def predict_disease(disease_key, user_values: dict):
     x_scaled = bundle["scaler"].transform(x)
 
     proba = float(bundle["model"].predict_proba(x_scaled)[0][1])
-    level = _risk_level(proba)
+    level = _risk_level(disease_key, proba)
     factors = _contributing_factors(disease_key, user_values)
 
     result = {
+        "condition_key": disease_key,
         "condition": MODEL_REGISTRY[disease_key]["display_name"],
         "risk_level": level,
         "contributing_factors": factors,
@@ -168,6 +208,8 @@ def predict_disease(disease_key, user_values: dict):
         result["probability_percent"] = round(proba * 100, 1)
     else:
         result["probability_percent"] = None
+    if MODEL_REGISTRY[disease_key].get("result_note"):
+        result["result_note"] = MODEL_REGISTRY[disease_key]["result_note"]
 
     return result
 
